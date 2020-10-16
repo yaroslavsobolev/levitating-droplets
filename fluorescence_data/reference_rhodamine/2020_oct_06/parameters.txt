@@ -1,0 +1,85 @@
+
+******************************
+concentrations
+ORI = detergent(including 0.25%Rh.B w/w)+MeOH=1:5 w/w
+Base = detergent+MeOH 1:5 w/w
+ORIE2 = ORI dilutied 100 times
+ORIE3 = ORI dilutied 1000 times
+...
+
+*******************************
+excitation: 540nm
+emission: 550-700nm
+
+excitation slit width: 2nm---0.77mm
+emission slit width: 2nm--0.77mm
+
+step size: 2nm
+integration time: 1 sec
+
+
+*******************************
+copied from software
+Current Acquisition: Acquisition 1
+
+Type: EmissionScan
+
+Created: 10/5/2020 4:47:33 PM
+
+Emission Scan Settings
+
+Repeats: 0
+Background: (Not Used)
+
+Excitation: 540 nm
+Emission1: 550 nm -> 700 nm
+
+Slit Settings
+   Ex: Entr: 2 nm, Exit: 2 nm
+   Em: Entr: 2 nm, Exit: 2 nm
+
+Step Size: 2 nm
+Integration: 1 sec
+
+Scalar Background Acquired: No (no date)
+
+ASOC Sampling frequency: 200 kHz
+
+Traces
+
+  Raw: Name='D1 540:550-700', Src=Detector1, Bgrd=0, Vis=<Graph 1>, Grp=''
+  Raw: Name='ExCorr 540:550-700', Src=RCQCSignal, Bgrd=0, Vis=<Graph 1>, Grp=''
+
+Hardware Accessory Settings
+
+Titrator Settings
+	Cuvette Capacity:		0 nL
+	Initial Sample Volume:	0 nL
+	Injection Volume:		0 nL
+	Number of Injections:	0
+	Titration Delay:		0 seconds
+	Titration Mode:		Constant Injection Volume
+	Logarithmic:		False
+
+Main Graph Axes
+Not Enabled
+
+Auxiliary Graph Axes
+Not Enabled
+
+Preferences
+Reset clock for time-based acquisitions:	False
+Manual Pause pauses acquisition clock:	True
+Display manual device cues:		False
+Automatically Start after Prepare:	True
+Average all repeats in one trace:	False
+Always create a new Session:		False
+Include background traces in Session:	False
+Background acquisition waits for TTL In signal:	False
+Hide all traces except current Repeat:	False
+Show acquisition clock in seconds:	False
+
+Comments
+
+AutoSave Session
+C:\Users\user\Documents\PTI\FelixGX\Repository\4.3.2010\autosave.gxz
