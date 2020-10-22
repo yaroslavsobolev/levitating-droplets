@@ -6,6 +6,8 @@ records = pickle.load(open('fluorescence_data/2020_oct/oct_08/Exp_Acquisition 1 
                            "rb"))
 records.extend(pickle.load(open('fluorescence_data/2020_oct/oct_15/excel_Acquisition 1 2020-10-14 14_28_45 »» Detector1.group._processed.pickle',
                            "rb")))
+records.extend(pickle.load(open('fluorescence_data/2020_oct/oct_20\Acquisition 1 2020-10-21 17_11_10 »» Detector1.group._processed.pickle',
+                           "rb")))
 
 # for vpp in [1.25, 1.75]:
 #     recs = [r for r in records if (r['rpm'] == 300 and r['vpp']==vpp)]
