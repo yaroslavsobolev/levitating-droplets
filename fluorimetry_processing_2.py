@@ -53,12 +53,12 @@ def get_coeff(main_reference_spectrum, target_spectrum, target_spectrum_waveleng
     slope_error = perr[0]
 
     if not only_rh_reference:
-        plt.title('A,B,C={0}'.format(popt))
+        plt.title('RhB,1st_baseline,2nd_baseline={0}'.format(popt))
         plt.plot(target_spectrum_wavelengths, target_spectrum, 'o', markersize=2, label='target spectrum')
-        plt.plot(target_spectrum_wavelengths, target_spectrum-second_baseline_interpolator(target_spectrum_wavelengths),
-                 label='target spectrum minus 2nd baseline')
-        plt.plot(target_spectrum_wavelengths, target_spectrum-baseline_interpolator(target_spectrum_wavelengths),
-                 label='target spectrum minus 1st baseline')
+        # plt.plot(target_spectrum_wavelengths, target_spectrum-second_baseline_interpolator(target_spectrum_wavelengths),
+        #          label='target spectrum minus 2nd baseline', alpha=0.3)
+        # plt.plot(target_spectrum_wavelengths, target_spectrum-baseline_interpolator(target_spectrum_wavelengths),
+        #          label='target spectrum minus 1st baseline', alpha=0.3)
         plt.plot(target_spectrum_wavelengths, func(target_spectrum_wavelengths, popt[0], popt[1], popt[2]),
                  label='fit spectrum', alpha=0.8)
         plt.plot(target_spectrum_wavelengths, func(target_spectrum_wavelengths, popt[0], 0, 0),
@@ -203,15 +203,18 @@ def construct_reference_enhanced(ref_file, ax):
 
 def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
         ref_file='fluorescence_data/reference_rhodamine/2020_oct_08/For_ref_Acquisition 1 2020-10-07 13_58_43 »» Detector1.group.txt',
-        second_baseline_file='fluorescence_data/reference_rhodamine/second_baseline.txt',
         enhanced_signal_settings=False):
     f_calib, ax_calib = plt.subplots()
     if enhanced_signal_settings:
+        second_baseline_file = 'fluorescence_data/2020_oct/oct_27/Calibration for new setting/New baseline for enhanced signal_oct28.txt'
+        second_baseline_data = np.genfromtxt(second_baseline_file, skip_header=6, skip_footer=2, delimiter='\t')
         reference_wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter = \
             construct_reference_enhanced(
                 'fluorescence_data/2020_oct/oct_27/Calibration for new setting/For_calibration_of_new_settings_oct_27.txt',
                 ax_calib)
     else:
+        second_baseline_file = 'fluorescence_data/reference_rhodamine/second_baseline.txt'
+        second_baseline_data = np.genfromtxt(second_baseline_file, skip_header=4, skip_footer=2, delimiter='\t')
         reference_wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter = construct_reference(ref_file,
                                                                                                                                 ax_calib)
     spectrum_id = 0 + 2*(spectrum_id-1)
@@ -239,7 +242,6 @@ def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
     noise_std = np.std((target_spectrum - savgol_filter(target_spectrum, 31, 3))[-20:])
     print('Noise in current target spectrum is: {0:.2f}'.format(noise_std))
 
-    second_baseline_data = np.genfromtxt(second_baseline_file, skip_header=4, skip_footer=2, delimiter='\t')
     # slope, intercept, r_value, p_value, std_err = stats.linregress(main_reference_spectrum, target_spectrum)
     fig9 = plt.figure(9)
     slope, slope_error = get_coeff(main_reference_spectrum, target_spectrum, target_spectrum_wavelengths,
@@ -249,7 +251,7 @@ def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
                                    second_baseline_wavelengths=second_baseline_data[:, 0],
                                    second_baseline=second_baseline_data[:,1])
     plt.legend()
-    # plt.show()
+    # plt.show()                                        ##<<<<< UNCOMMENT THIS 'plt.show()' LINE TO SEE THE FIT QUALITY
     concentration = slope_to_concentration_converter(slope)
     conc_error = slope_to_concentration_converter(slope + slope_error) - concentration
     ax_calib.plot(concentration, slope, 'o', label='target spectrum')
@@ -263,8 +265,8 @@ def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
     # f5 = plt.figure(6)
     # plt.plot(reference_wavelengths, main_reference_spectrum, 'o-', label='reference 1e-3')
     # plt.plot(target_spectrum_wavelengths, target_spectrum, 'o-', label='Target spectrum')
-    # plt.plot(target_spectrum_wavelengths, file_data[4:, spectrum_id + 1], 'o-', label='Target spectrum raw')
-    # plt.plot(reference_wavelengths, slope*main_reference_spectrum, 'o-', label='Fit of RH spectrum')
+    # # plt.plot(target_spectrum_wavelengths, file_data[4:, spectrum_id + 1], 'o-', label='Target spectrum raw')
+    # plt.plot(reference_wavelengths, slope*main_reference_spectrum, 'o-', label='RH component')
     # plt.legend()
     # plt.show()
     return concentration, conc_error
@@ -341,17 +343,13 @@ def save_results_to_files(results, filename_for_saving):
     pickle.dump(results, open(filename_for_saving + '.pickle', "wb"))
 
 if __name__ == '__main__':
-    # f_calib, ax_calib = plt.subplots()
-    # reference_wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter = \
-    #     construct_reference_enhanced(
-    #         'fluorescence_data/2020_oct/oct_27/Calibration for new setting/For_calibration_of_new_settings_oct_27.txt',
-    #         ax_calib)
+    ## THIS IS FOR TESTING THE SINGLE SPECTRUM PROCESSING
     # target_file = 'fluorescence_data/2020_oct/oct_27/Calibration for new setting/For_calibration_of_new_settings_oct_27.txt'
-    # results = process_one_spectrum_with_auto_parameters(target_file, spectrum_id=2, net_volume_in_mL=2.05/0.8,
+    # results = process_one_spectrum_with_auto_parameters(target_file, spectrum_id=1, net_volume_in_mL=2.05/0.8,
     #                                           force_enhanced_signal_settings=False)
     # print(results)
-    # plt.show()
 
+    ## This is a simple interface asking for a file and processing all spectra in it
     root = tk.Tk()
     root.withdraw()
     target_file = filedialog.askopenfilename()
