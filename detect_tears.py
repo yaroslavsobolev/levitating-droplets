@@ -135,9 +135,7 @@ def process_one_folder(target_folder,
     plt.show()
 
 if __name__ == '__main__':
-    process_one_folder('F:/yankai_levitation_transfer_highspeed_videos/'
-                       '2020_oct_15/'
-                       'FASTS4_2020-10-15_1409_000000/img0000/',
+    process_one_folder('H:/FASTS4_2020-10-15_1409_000000/img0000/',
                        raw_frames_suffix='',
                        thresh_1=25,
                        start_frame=1,

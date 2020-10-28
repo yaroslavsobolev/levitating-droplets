@@ -154,15 +154,22 @@ from analyze_detected_events import *
 #                         freq=10,
 #                         limc=2.5 / 2 * 1.1 * 100
 #                         )
-analyze_detected_events('F:/yankai_levitation_transfer_highspeed_videos/'
-                       '2020_oct_15/'
-                       'FASTS4_2020-10-15_1409_000000/img0000/',
+
+# process_one_folder('H:/FASTS4_2020-10-15_1409_000000/img0000/',
+#                    raw_frames_suffix='',
+#                    thresh_1=25,
+#                    start_frame=1,
+#                    radius=50,
+#                    center=(90, 150),
+#                    do_figures=False
+#                    )
+analyze_detected_events('H:/FASTS4_2020-10-15_1409_000000/img0000/',
                         raw_frames_suffix='',
                         gap_thresh=9,
                         amp_thresh=35,
                         amp_thresh_right=55,
                         amp_thresh_left=0,
-                        do_space_filtering=True,
+                        do_space_filtering=False,
                         x_locs=[-75.0, 86.0],
                         x_loc_width=6,
                         y_locs = [14, 13],

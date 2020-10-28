@@ -28,6 +28,11 @@ records.extend(pickle.load(open('fluorescence_data/2020_oct/oct_20\Acquisition 1
 
 fig2,ax = plt.subplots()
 
+
+
+
+
+
 possible_vpps = [1.25, 1.75, 2]
 
 for vpp in possible_vpps:

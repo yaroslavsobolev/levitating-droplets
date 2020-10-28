@@ -216,7 +216,8 @@ def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
                                                                                                                                 ax_calib)
     spectrum_id = 0 + 2*(spectrum_id-1)
     file_data = np.genfromtxt(spectrum_file, skip_header=6, skip_footer=2, delimiter='\t')
-    target_spectrum_wavelengths = file_data[:, 0]
+    target_spectrum_wavelengths = file_data[:, spectrum_id]
+    target_spectrum_wavelengths = target_spectrum_wavelengths[~np.isnan(target_spectrum_wavelengths)]
     # assert (file_data[:, 0] == wavelengths).all()
     header = get_header(spectrum_file, skip_header=5)
     print('Using trace with label {0}'.format(header[spectrum_id]))
@@ -225,6 +226,7 @@ def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
     # baseline_interp = interpolate.interp1d(reference_wavelengths, baseline, fill_value='extrapolate')
     # resampled_baseline = baseline_interp(target_spectrum_wavelengths)
     target_spectrum = file_data[:, spectrum_id + 1]# - resampled_baseline
+    target_spectrum = target_spectrum[~np.isnan(target_spectrum)]
     if enhanced_signal_settings:
         cut_from_the_start = 4
         target_spectrum = target_spectrum[cut_from_the_start:]
@@ -287,6 +289,8 @@ def process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volu
     regexp1 = re.compile('''(?P<date>.+?)_(?P<label>\d+?)_(?P<vpp>.+?)vpp_(?P<rpm>.+?)rpm_(?P<cycles>.+?)cyc_(?P<id>.+?)$''',
                          re.DOTALL)
     match = regexp1.match(header)
+    if not match:
+        return False
     parameters = {s : match.group(s) for s in ['date', 'label', 'vpp', 'rpm', 'cycles', 'id']}
     for s in ['vpp', 'rpm', 'cycles']:
         parameters[s] = float(parameters[s])
@@ -316,8 +320,10 @@ def process_all_experiments_in_file(target_file, net_volume_in_mL,
     last_spectrum_id = int(round(len(headers)/2+1))
     for spectrum_id in range(last_spectrum_id):
         print('\n')
-        results.append(process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volume_in_mL,
-                                                                 force_enhanced_signal_settings=force_enhanced_signal_settings))
+        processing_result = process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volume_in_mL,
+                                                                 force_enhanced_signal_settings=force_enhanced_signal_settings)
+        if processing_result:
+            results.append(processing_result)
     return results
 
 def save_results_to_files(results, filename_for_saving):
