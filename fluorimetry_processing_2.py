@@ -251,7 +251,7 @@ def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
                                    second_baseline_wavelengths=second_baseline_data[:, 0],
                                    second_baseline=second_baseline_data[:,1])
     plt.legend()
-    # plt.show()                                        ##<<<<< UNCOMMENT THIS 'plt.show()' LINE TO SEE THE FIT QUALITY
+    #plt.show()                                        ##<<<<< UNCOMMENT THIS 'plt.show()' LINE TO SEE THE FIT QUALITY
     concentration = slope_to_concentration_converter(slope)
     conc_error = slope_to_concentration_converter(slope + slope_error) - concentration
     ax_calib.plot(concentration, slope, 'o', label='target spectrum')
