@@ -41,19 +41,24 @@ def get_coeff(main_reference_spectrum, target_spectrum, target_spectrum_waveleng
         def func(xs, a, b, c):
             return a*reference_interpolator(xs) + b*baseline_interpolator(xs) + c*second_baseline_interpolator(xs)
         p0 = (slope, 0.5, 0.5)
+        # p0 = (slope, 0.01, 0.01)
         bounds = ([0, -np.inf, -np.inf], [np.inf, np.inf, np.inf])
     popt, pcov = curve_fit(func, target_spectrum_wavelengths, target_spectrum,
                            p0=p0, bounds=bounds,
                            sigma=noise_std*np.ones_like(target_spectrum),
                            absolute_sigma=True)
+                           # ftol=1.49012e-09, xtol=1.49012e-09)
     perr = np.sqrt(np.diag(pcov))
     slope = popt[0]
     slope_error = perr[0]
 
     if not only_rh_reference:
+        plt.title('A,B,C={0}'.format(popt))
         plt.plot(target_spectrum_wavelengths, target_spectrum, 'o', markersize=2, label='target spectrum')
         plt.plot(target_spectrum_wavelengths, target_spectrum-second_baseline_interpolator(target_spectrum_wavelengths),
                  label='target spectrum minus 2nd baseline')
+        plt.plot(target_spectrum_wavelengths, target_spectrum-baseline_interpolator(target_spectrum_wavelengths),
+                 label='target spectrum minus 1st baseline')
         plt.plot(target_spectrum_wavelengths, func(target_spectrum_wavelengths, popt[0], popt[1], popt[2]),
                  label='fit spectrum', alpha=0.8)
         plt.plot(target_spectrum_wavelengths, func(target_spectrum_wavelengths, popt[0], 0, 0),
@@ -144,11 +149,70 @@ def construct_reference(ref_file, ax):
     # plt.show()
     return wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter
 
+def construct_reference_enhanced(ref_file, ax):
+    # "ehnanced" means that the fluorimeter has the following settings:
+    # Excitation monochromator: entrance slit 8 nm, exit slit 8 nm
+    # Emission monochromator: entrance slit 4 nm, exit slit 4 nm
+    # NOTES ABOUT REFERENCE SPECTRA header:
+    #
+    # ORI = detergent(including 0.25%Rh.B w/w)+MeOH=1:5 w/w
+    # Base = detergent+MeOH 1:5 w/w
+    # ORIE2 = ORI dilutied 100 times
+    # ORIE3 = ORI dilutied 1000 times
+    # =================================
+    ref_data = np.genfromtxt(ref_file, skip_header=6, skip_footer=2, delimiter='\t')
+    headers = get_header(ref_file=ref_file)
+    ref_spectra = []
+    wavelengths = ref_data[:,0]
+    for col_id in range(0, 14, 2):
+        assert (ref_data[:,col_id] == wavelengths).all()
+        label = headers[col_id]
+        if not (label.find('enhanced signal') >= 0):
+            print('no enhanced signal')
+            concentration = -1
+        elif label.find('baseline') >= 0:
+            concentration = 0
+        elif label.find('ORIE') >= 0:
+            concentration = 10**(-1*int(label[4]))
+        else:
+            continue
+        ref_spectra.append([concentration, label, ref_data[:,col_id+1]])
+        # plt.plot(wavelengths, ref_data[:,col_id+1], label=headers[col_id])
+
+    baseline = np.mean([r[2] for r in ref_spectra if r[0] == 0], axis=0)
+    noise_std = np.std((ref_spectra[3][2] - baseline)[-20:])
+
+    unique_concentrations = sorted(list(set([r[0] for r in ref_spectra])))
+    calib_rh = {concentration : np.mean([r[2] for r in ref_spectra if r[0] == concentration], axis=0) - baseline
+                for concentration in unique_concentrations if (concentration > 0)}
+    main_reference_spectrum = calib_rh[1E-4]
+    calibration_slopes = [[0, 0, 0]]
+    for c in calib_rh:
+        y = calib_rh[c]
+        slope, intercept, r_value, p_value, std_err = stats.linregress(main_reference_spectrum, y)
+        slope, _ = get_coeff(main_reference_spectrum, y, wavelengths, slope, intercept, noise_std,
+                                       wavelengths)
+        calibration_slopes.append([c, slope, intercept])
+    calibration_slopes = np.array(calibration_slopes)
+    xs = np.logspace(-4, 1, 100)
+    slope_to_concentration_converter = interpolate.interp1d(calibration_slopes[:,1], calibration_slopes[:,0], fill_value='extrapolate')
+    ax.loglog(calibration_slopes[:,0], calibration_slopes[:,1], 'o', label='Calibration points')
+    ax.loglog(slope_to_concentration_converter(xs), xs, label='interpolator')
+    # plt.show()
+    return wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter
+
 def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
         ref_file='fluorescence_data/reference_rhodamine/2020_oct_08/For_ref_Acquisition 1 2020-10-07 13_58_43 »» Detector1.group.txt',
-        second_baseline_file='fluorescence_data/reference_rhodamine/second_baseline.txt'):
+        second_baseline_file='fluorescence_data/reference_rhodamine/second_baseline.txt',
+        enhanced_signal_settings=False):
     f_calib, ax_calib = plt.subplots()
-    reference_wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter = construct_reference(ref_file,
+    if enhanced_signal_settings:
+        reference_wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter = \
+            construct_reference_enhanced(
+                'fluorescence_data/2020_oct/oct_27/Calibration for new setting/For_calibration_of_new_settings_oct_27.txt',
+                ax_calib)
+    else:
+        reference_wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter = construct_reference(ref_file,
                                                                                                                                 ax_calib)
     spectrum_id = 0 + 2*(spectrum_id-1)
     file_data = np.genfromtxt(spectrum_file, skip_header=6, skip_footer=2, delimiter='\t')
@@ -161,6 +225,10 @@ def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
     # baseline_interp = interpolate.interp1d(reference_wavelengths, baseline, fill_value='extrapolate')
     # resampled_baseline = baseline_interp(target_spectrum_wavelengths)
     target_spectrum = file_data[:, spectrum_id + 1]# - resampled_baseline
+    if enhanced_signal_settings:
+        cut_from_the_start = 4
+        target_spectrum = target_spectrum[cut_from_the_start:]
+        target_spectrum_wavelengths = target_spectrum_wavelengths[cut_from_the_start:]
     # fig5 = plt.figure(5)
     # plt.plot(target_spectrum)
     # plt.plot(savgol_filter(target_spectrum, 31, 3))
@@ -192,14 +260,17 @@ def get_concentration_from_spectrum(spectrum_file, spectrum_id=1,
     plt.legend()
     # f5 = plt.figure(6)
     # plt.plot(reference_wavelengths, main_reference_spectrum, 'o-', label='reference 1e-3')
-    # plt.plot(target_spectrum_wavelengths, target_spectrum, 'o-', label='Target spectrum (baseline subtracted)')
-    # plt.plot(target_spectrum_wavelengths, file_data[:, spectrum_id + 1], 'o-', label='Target spectrum raw')
+    # plt.plot(target_spectrum_wavelengths, target_spectrum, 'o-', label='Target spectrum')
+    # plt.plot(target_spectrum_wavelengths, file_data[4:, spectrum_id + 1], 'o-', label='Target spectrum raw')
     # plt.plot(reference_wavelengths, slope*main_reference_spectrum, 'o-', label='Fit of RH spectrum')
     # plt.legend()
+    # plt.show()
     return concentration, conc_error
 
-def get_transfer_volume(target_file, net_volume_in_mL, number_of_droplets, spectrum_id=1):
-    dilution, dilution_err = get_concentration_from_spectrum(target_file, spectrum_id=spectrum_id)
+def get_transfer_volume(target_file, net_volume_in_mL, number_of_droplets, spectrum_id=1,
+                        enhanced_signal_settings=False):
+    dilution, dilution_err = get_concentration_from_spectrum(target_file, spectrum_id=spectrum_id,
+                                                             enhanced_signal_settings=enhanced_signal_settings)
     vol_per_droplet = dilution*net_volume_in_mL*1e-3/number_of_droplets
     print('Dilution is {0}\n'
           'Volume per droplet is {1:.3f} pL\n'
@@ -210,7 +281,8 @@ def get_transfer_volume(target_file, net_volume_in_mL, number_of_droplets, spect
     print('Diameter of the droplet printed is: {0:.3f} microns'.format(2*(vol_per_droplet*3/4/np.pi)**(1/3)*1e5))
     plt.show()
 
-def process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volume_in_mL):
+def process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volume_in_mL,
+                                              force_enhanced_signal_settings=False):
     header = get_header(target_file, skip_header=5)[0 + 2*(spectrum_id-1)]
     regexp1 = re.compile('''(?P<date>.+?)_(?P<label>\d+?)_(?P<vpp>.+?)vpp_(?P<rpm>.+?)rpm_(?P<cycles>.+?)cyc_(?P<id>.+?)$''',
                          re.DOTALL)
@@ -218,7 +290,16 @@ def process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volu
     parameters = {s : match.group(s) for s in ['date', 'label', 'vpp', 'rpm', 'cycles', 'id']}
     for s in ['vpp', 'rpm', 'cycles']:
         parameters[s] = float(parameters[s])
-    dilution, dilution_err = get_concentration_from_spectrum(target_file, spectrum_id=spectrum_id)
+    if force_enhanced_signal_settings:
+        enhanced_signal_settings = True
+    else:
+        if parameters['id'].find('enhanced signal') >= 0:
+            enhanced_signal_settings = True
+        else:
+            enhanced_signal_settings = False
+
+    dilution, dilution_err = get_concentration_from_spectrum(target_file, spectrum_id=spectrum_id,
+                                                             enhanced_signal_settings=enhanced_signal_settings)
     plt.close('all')
     vol_per_droplet = dilution*net_volume_in_mL*1e-3/(2*parameters['cycles'])
     droplet_diameter = 2 * (vol_per_droplet * 3 / 4 / np.pi) ** (1 / 3) * 1e5
@@ -228,13 +309,15 @@ def process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volu
     parameters['rel_error'] = rel_error
     return parameters
 
-def process_all_experiments_in_file(target_file, net_volume_in_mL):
+def process_all_experiments_in_file(target_file, net_volume_in_mL,
+                                    force_enhanced_signal_settings=False):
     results = []
     headers = get_header(target_file, skip_header=5)
     last_spectrum_id = int(round(len(headers)/2+1))
     for spectrum_id in range(last_spectrum_id):
         print('\n')
-        results.append(process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volume_in_mL))
+        results.append(process_one_spectrum_with_auto_parameters(target_file, spectrum_id, net_volume_in_mL,
+                                                                 force_enhanced_signal_settings=force_enhanced_signal_settings))
     return results
 
 def save_results_to_files(results, filename_for_saving):
@@ -252,6 +335,17 @@ def save_results_to_files(results, filename_for_saving):
     pickle.dump(results, open(filename_for_saving + '.pickle', "wb"))
 
 if __name__ == '__main__':
+    # f_calib, ax_calib = plt.subplots()
+    # reference_wavelengths, baseline, noise_std, main_reference_spectrum, slope_to_concentration_converter = \
+    #     construct_reference_enhanced(
+    #         'fluorescence_data/2020_oct/oct_27/Calibration for new setting/For_calibration_of_new_settings_oct_27.txt',
+    #         ax_calib)
+    # target_file = 'fluorescence_data/2020_oct/oct_27/Calibration for new setting/For_calibration_of_new_settings_oct_27.txt'
+    # results = process_one_spectrum_with_auto_parameters(target_file, spectrum_id=2, net_volume_in_mL=2.05/0.8,
+    #                                           force_enhanced_signal_settings=False)
+    # print(results)
+    # plt.show()
+
     root = tk.Tk()
     root.withdraw()
     target_file = filedialog.askopenfilename()
