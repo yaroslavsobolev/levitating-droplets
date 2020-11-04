@@ -1,0 +1,3 @@
+In this experiment, I use Orangefarm detergent with Rhodamine B (0.015% w/w) as the inner layer of the drum and use raw detergent as the levitated droplet phase. The experiment is to check the possibility of material tranfering from the bottom liquid layer to the levitated droplet during the printing process. 
+
+Results: the fluorescence spectrum indicate that there is no reserve transfering during the printing process.
