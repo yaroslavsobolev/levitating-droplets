@@ -1,0 +1,1 @@
+A new lamp is installed for the fluorometer to replace the old lamp. Calibriation is needed for the new measured spectrum. This retest is to find the factor between the new curve and the old curves.
