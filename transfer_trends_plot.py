@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib import ticker as mticker
+from matplotlib.ticker import (
+    AutoLocator, AutoMinorLocator)
 import pickle
 
 def remove_duplicate_dicts_from_list(l):
@@ -49,11 +51,6 @@ records = remove_duplicate_dicts_from_list(records)
 
 fig2,ax = plt.subplots()
 
-
-
-
-
-
 possible_vpps = [1.25, 1.75, 2]
 
 for vpp in possible_vpps:
@@ -81,13 +78,25 @@ for vpp in possible_vpps:
     plt.errorbar(x=xs, y=ys, yerr=errs, markersize=5, marker='o', capsize=5, linestyle='none', label='Vpp={0:.2f} V'.format(vpp))
 
 plt.plot([1200, 1200], [0.01, 0.1], linewidth=5, label='Gramophone')
+
+# Some provisionary testing of the analytical functions
+def func(x):
+    return 0.00007*np.exp(4000*1/x)
+# def func(x):
+#     return 5e21*x**(-8)
+xs = np.linspace(300, 800, 100)
+plt.plot(xs, func(xs), color='red')
+
 plt.yscale('log')
 plt.xscale('log')
 # formatter = ScalarFormatter()
 # formatter.set_scientific(False)
 # ax.xaxis.set_major_formatter(formatter)
-ax2 = ax.secondary_xaxis('top', functions=(lambda x:x*1.6*2*np.pi*(11.8e-3)/60, lambda x:x/(1.6*2*np.pi*(11.8e-3)/60)))
+ax2 = ax.secondary_xaxis('top', functions=(lambda x:x*1.68*2*np.pi*(11.8e-3)/60, lambda x:x/(1.68*2*np.pi*(11.8e-3)/60)))
+ax2.set_xscale('log')
+ax2.set_yscale('log')
 ax2.set_xlabel("Droplet's linear speed relative to the drum, m/s ")
+ax2.xaxis.set_minor_locator(AutoMinorLocator())
 plt.ylim(0.005, 400)
 
 for ax_here in [ax, ax2]:
@@ -95,6 +104,9 @@ for ax_here in [ax, ax2]:
     ax_here.xaxis.set_major_formatter(mticker.ScalarFormatter())
     ax_here.tick_params(which='major', length=4)
     ax_here.tick_params(which='minor', length=4)
+
+# ax.ticklabel_format(axis='x', style='plain')
+# ax2.ticklabel_format(axis='x', style='plain')
 
 # ax2.xaxis.set_major_formatter(ScalarFormatter())
 plt.xlabel('Speed of rotation, rpm')

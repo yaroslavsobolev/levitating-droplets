@@ -9,6 +9,7 @@ from skimage.feature import register_translation
 from skimage.feature import canny
 import os
 import time
+from glob import glob
 
 # target_folder = 'F:/yankai_levitation_transfer_highspeed_videos/10Hz_300V_sinewave_1/whole_video_1/'
 # raw_frames_suffix = 'FASTS4_000000/'
@@ -22,7 +23,8 @@ def process_one_folder(target_folder,
                         low_threshold=30,
                         high_threshold=150,
                         radius=False,
-                        center=False):
+                        center=False,
+                        sum_0 = 31476558.0):
     video_folder = target_folder + raw_frames_suffix
     frames_folder = target_folder + 'frames_1/'
     events_folder = target_folder + 'events_pickle/'
@@ -31,10 +33,14 @@ def process_one_folder(target_folder,
         if not os.path.exists(my_folder):
             os.makedirs(my_folder)
     filelist = []
-    for file in os.listdir(video_folder):
-        if file.endswith(".jpg"):
-            filelist.append(os.path.join(video_folder, file))
-    filelist = sorted(filelist)
+    # find all "imgNNN" subfolders
+    img_subfolders = sorted(glob(video_folder + "img*/"))
+    for video_subfolder in img_subfolders:
+        for file in sorted(os.listdir(video_subfolder)):
+            if file.endswith(".jpg"):
+                filelist.append(os.path.join(video_subfolder, file))
+    # filelist = sorted(filelist)
+    print(filelist)
     print('Found {0} jpg frames.'.format(len(filelist)))
     frame_id_max = len(filelist) - 1
 
@@ -42,7 +48,6 @@ def process_one_folder(target_folder,
         # return np.sum(io.imread('{0}{1:07d}.jpg'.format(video_folder, frame_id)).astype(float), axis=2)
         return np.sum(io.imread(filelist[frame_id]).astype(float), axis=2)
     # sum_0 = np.sum(load_image(0))
-    sum_0 = 31476558.0
 
     def load_normed(frame_id):
         image = load_image(frame_id)
@@ -135,11 +140,20 @@ def process_one_folder(target_folder,
     plt.show()
 
 if __name__ == '__main__':
-    process_one_folder('H:/FASTS4_2020-10-15_1409_000000/img0000/',
+    # process_one_folder('H:/FASTS4_2020-10-15_1409_000000/img0000/',
+    #                    raw_frames_suffix='',
+    #                    thresh_1=25,
+    #                    start_frame=1,
+    #                    radius=50,
+    #                    center=(90,150),
+    #                    do_figures=False
+    #                    )
+    process_one_folder('E:/fastcam/2020_nov_10/FASTS4_11-10_1000rpm_000000/',
                        raw_frames_suffix='',
-                       thresh_1=25,
+                       thresh_1=20,
                        start_frame=1,
-                       radius=50,
-                       center=(90,150),
-                       do_figures=False
+                       radius=35,
+                       center=(50,110),
+                       do_figures=False,
+                       sum_0 = 31476558.0/8
                        )

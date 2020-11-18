@@ -14,7 +14,8 @@ def analyze_detected_events(target_folder, raw_frames_suffix='', gap_thresh=10, 
                             vp = 2.5,
                             freq = 10,
                             fps=False,
-                            limc=False):
+                            limc=False,
+                            last_event=False):
     video_folder = target_folder + raw_frames_suffix
     misc_folder = target_folder + 'misc/'
     figures_folder = target_folder + 'figures/'
@@ -33,7 +34,10 @@ def analyze_detected_events(target_folder, raw_frames_suffix='', gap_thresh=10, 
 
 
     data = []
-    for filename in os.listdir(target_folder + 'events_pickle/'):
+    all_pickle_files = os.listdir(target_folder + 'events_pickle/')
+    if last_event:
+        all_pickle_files = all_pickle_files[:last_event]
+    for filename in all_pickle_files:
         with open(os.path.join(target_folder + 'events_pickle/', filename), 'rb') as f: # open in readonly mode
             for_pickle = pickle.load(f)
         data.append(for_pickle)
