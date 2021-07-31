@@ -1,0 +1,4 @@
+sigma 72e-3 N/m
+g	9.8067 m/s²
+density	1000 kg/m^3
+doms for interface = 4,6,8,10
