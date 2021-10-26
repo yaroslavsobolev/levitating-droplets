@@ -54,10 +54,30 @@ for v in vreds:
 plt.plot(vreds, cas, '--', color='black')
 
 #limit due to very small gap under the droplet
-mingap = 2000e-9
-prefactor = ((mingap/2.123/0.3)/cap_length)**(3/2) * 1
-ca_lowlim = prefactor * ( ((3 * vreds) / (4 * np.pi))**(-2/3) + 2)**(3/4)
+
+# ## Version where curvature is found as k_b = sqrt(k_0**2 + 2/caplen**2)
+# mingap = 2000e-9
+# prefactor = ((mingap/2.123/0.3)/cap_length)**(3/2) * 1
+# ca_lowlim = prefactor * ( ((3 * vreds) / (4 * np.pi))**(-2/3) + 2)**(3/4)
+
+# version where k_b is found from numerical sessile drop shapes - semianalytical
+G = 10.111
+# G = 10.60624516
+mingap = 1350e-9
+k_bs = 1/cap_length * np.sqrt( G*(vreds)**(-2/3) + 4 )
+# k_bs = 1/cap_length * np.sqrt( G*(vreds)**(-0.64545015) + 4.07305507 )
+ca_lowlim = ( k_bs * mingap / (2.123 * 0.3) )**(1.5)
+
+# # for small droplet limit
+# # version where k_b is found from numerical sessile drop shapes - semianalytical
+# G = 10.60624516
+# mingap = 1350e-9
+# k_bs = 1/cap_length * np.sqrt( G*(vreds)**(-0.64545015) + 4.07305507 )
+# ca_lowlim_2 = ( k_bs * mingap * ( (3*vreds/4/np.pi)**(-1/3) )**(-4/5) / (0.871 * 0.3) )**(5/4)
+
+
 plt.plot(vreds, ca_lowlim, '--', color='C2')
+# plt.plot(vreds, ca_lowlim_2, '--', color='C3')
 
 plt.xscale('log')
 plt.yscale('log')

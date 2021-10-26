@@ -42,9 +42,9 @@ plt.show()
 
 data = np.loadtxt('misc_data/wired_voltage_thresh_vs_speed.txt', delimiter='\t', skiprows=1)
 
-
-plt.plot(Us, last_Vs, 'o', color='C1', label='Theory (2D FEM)')
-plt.plot(data[:,0]/1000, data[:,1], 'o', label='Experiment')
+fig,ax1 = plt.subplots(figsize=(4.5*0.9,4*0.9))
+tfem1 = plt.plot(Us, last_Vs, color='C0', linewidth=5, label='Theory (2D FEM)', alpha=0.6)
+e1 = plt.plot(data[:,0]/1000, data[:,1], 'o', label='Experiment', color='C0', alpha=1)
 z = np.polyfit(data[:,0]/1000, data[:,1], 1)
 p = np.poly1d(z)
 xp = np.linspace(0, 2, 100)
@@ -53,10 +53,9 @@ plt.plot(xp, p(xp), '--', color='C0', alpha=0.5)
 z = np.polyfit(Us, last_Vs, 1)
 p = np.poly1d(z)
 xp = np.linspace(0, 2, 100)
-plt.plot(xp, p(xp), '--', color='C1', alpha=0.5)
-plt.xlabel('Flight velocity V, m/s')
-plt.ylabel('Critical voltage, U')
-plt.ylim(0,120/prefactor)
+plt.plot(xp, p(xp), '--', color='C0', alpha=0.5)
+
+plt.ylim(0,18)
 plt.xlim(0,3)
 
 xdata = data[:,0]/1000
@@ -66,11 +65,38 @@ def func(x, a):
 popt, pcov = curve_fit(func, xdata, ydata)
 print(popt)
 xs = np.linspace(0,3,100)
-plt.plot(xs, func(xs, *popt), 'r-',
+tana1 = plt.plot(xs, func(xs, *popt), color='C0',
          label='Theory (2D analytical)')
-plt.legend()
-plt.show()
 
+plt.xlabel('Flight velocity V, m/s')
+
+color = 'C0'
+ax1.set_ylabel('Wired critical voltage, U', color=color)
+ax1.tick_params(axis='y', labelcolor=color)
+
+ax2 = ax1.twinx()
+
+color = 'C1'
+ax2.set_ylabel('Wireless critical voltage, U', color=color)
+ax2.tick_params(axis='y', labelcolor=color)
+
+wireless_data = np.loadtxt('misc_data/wireless_voltage_thresh_vs_velocity.txt', skiprows=0, delimiter=' ')
+e2 = ax2.errorbar(x=wireless_data[:,0], y=wireless_data[:,1], yerr=wireless_data[:,2],
+             capsize=4, fmt='o', color=color,
+             alpha=0.6, label='Experiment')
+plt.ylim(0, 86)
+ax2.axhline(y=np.mean(wireless_data[:,1]), color=color, label='Theory (2D analytical)', alpha=0.7)
+
+handles, labels = ax1.get_legend_handles_labels()
+order = [1,2,0]
+l1 = ax1.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc='lower right')
+l1.get_frame().set_linewidth(3)
+# l = ax1.legend([(e1,tana1)],['Experiment'])
+# ax1.legend()
+# ax2.legend(loc='upper left')
+plt.tight_layout()
+fig.savefig('figures/voltage_vs_speed_noleg.png', dpi=800)
+plt.show()
 
 sqr_factor = 1666.625 #volts
 xdata = (data[:,0]/1000)*18.5e-6/25e-3

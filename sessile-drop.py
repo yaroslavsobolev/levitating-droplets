@@ -30,16 +30,16 @@ def colorline(x, y, dydx, fig, ax):
 
 def get_curvature(x, y, wlen = 3):
     # t = np.arange(x.shape[0])
-    xˈ = savgol_filter(x, polyorder=1, window_length=wlen, deriv=1)
+    xˈ = savgol_filter(x, polyorder=2, window_length=wlen, deriv=1)
     xˈˈ = savgol_filter(x, polyorder=2, window_length=wlen, deriv=2)
-    yˈ = savgol_filter(y, polyorder=1, window_length=wlen, deriv=1)
+    yˈ = savgol_filter(y, polyorder=2, window_length=wlen, deriv=1)
     yˈˈ = savgol_filter(y, polyorder=2, window_length=wlen, deriv=2)
     curvature = (xˈ * yˈˈ - yˈ * xˈˈ) / np.power(xˈ ** 2 + yˈ ** 2, 1.5)
     return curvature
 
 def max_curvature(x, y):
     curvature = get_curvature(x,y)
-    curvature = np.abs(curvature)[1:-1]
+    curvature = np.abs(curvature)[2:-2]
     curvmax1 = np.max(curvature)
     return curvmax1
 
@@ -79,8 +79,8 @@ def caplen(sigma):
 # load sigmas
 sigma_factors = np.loadtxt('comsol_results/sessile-drop/sigma_piecewise.txt')[:,2]
 
-def convert_from_comsol():
-    for nfile in range(9):
+def convert_from_comsol(N=10):
+    for nfile in range(N):
         # get times from header
         target_file = "comsol_results/sessile-drop/shape_data{0:02d}.txt".format(nfile)
         fp = open(target_file)
@@ -129,6 +129,7 @@ def convert_from_comsol():
 
 if __name__ == '__main__':
     # convert_from_comsol() # UNCOMMENT FOR PRODUCING "analytical/sessile-drop/shapes.p" FROM RAW COMSOL DATA FILES
+
     shapes = pickle.load(open("analytical/sessile-drop/shapes.p", "rb") )
 
     for shape in shapes:
@@ -176,9 +177,14 @@ if __name__ == '__main__':
         return a*x**b + c
 
     pref1 = 2.5985
-    popt, pcov = curve_fit(func, xdata[-20:], ydata[-20:], p0=(8, 2/3, 4), bounds=[(0, 2/3-0.001, 4-0.001),
-                                                                           (np.inf, 2/3+0.001, 4+0.001)],
-                           sigma=ydata[-20:], ftol=1e-30)
+    # bounds = [(0, 2 / 3 - 0.001, 4 - 0.001), (np.inf, 2 / 3 + 0.001, 4 + 0.001)]
+    # bounds = [(0, 2 / 3 - 0.001, 0), (np.inf, 2 / 3 + 0.001, np.inf)]
+    # bounds = [(0, 2 / 3 - 0.001, 0), (np.inf, 2 / 3 + 0.001, np.inf)]
+    bounds = [(0, 0.5, 0), (np.inf, 3, np.inf)]
+    from_n = 0
+    to_n = -1
+    popt, pcov = curve_fit(func, xdata[from_n:to_n], ydata[from_n:to_n], p0=(9.92, 2/3, 4), bounds=bounds,
+                           sigma=ydata[from_n:to_n]**0.8, ftol=1e-30)
     print(popt)
     plt.plot(xdata, func(xdata, *popt), 'r-',
              label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
@@ -186,7 +192,7 @@ if __name__ == '__main__':
     plt.show()
 
     # plot one of the shapes
-    time, sigma, a, max_curv_unitless, volume, shape = shapes[3]
+    time, sigma, a, max_curv_unitless, volume, shape = shapes[20]
     curv = get_curvature(shape[:, 0], shape[:, 1])
     plt.plot(np.abs(curv), 'o-')
     rad = np.max(shape[:, 1]) / 2
