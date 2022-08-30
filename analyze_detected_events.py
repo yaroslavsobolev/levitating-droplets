@@ -119,6 +119,8 @@ def analyze_detected_events(target_folder, raw_frames_suffix='', gap_thresh=10, 
     factor = fps
     # factor = 1
     colors = ['red' if xpos > 0 else 'blue' for xpos in discharge_stats[:, 5]]
+    with open(misc_folder + 'colors.pickle', 'wb') as handle:
+        pickle.dump(colors, handle, protocol=pickle.HIGHEST_PROTOCOL)
     axarr[0].plot(discharge_stats[:,0]/factor, discharge_stats[:,1])
     axarr[1].plot(discharge_stats[:,0]/factor, discharge_stats[:,2])
     ts = np.linspace(0, np.max(discharge_stats[:, 0]) / factor, 10000)
@@ -186,6 +188,8 @@ def analyze_detected_events(target_folder, raw_frames_suffix='', gap_thresh=10, 
     # the scatter plot:
     ts = np.linspace(0, 1/freq, 1000)
     ax_scatter.plot(ts, 100*vp*np.sin(2*np.pi*ts*freq), color='black')
+    np.savetxt(misc_folder + 'applied_voltage_one_period.txt', 100*vp*np.sin(2*np.pi*ts*freq))
+    np.savetxt(misc_folder + 'time_one_period.txt', ts)
     crossings = []
     xs = []
     for i,x in enumerate(discharge_stats[:, 0]):
@@ -198,6 +202,7 @@ def analyze_detected_events(target_folder, raw_frames_suffix='', gap_thresh=10, 
                       color=colors[i], alpha=0.2)
     xs = np.array(xs)
     crossings = np.array(crossings)
+    np.savetxt(misc_folder + 'time_within_period.txt', xs)
     np.savetxt(misc_folder + 'crossings.txt', crossings)
     print('Mean threshhold voltage at events: {0:.2f} V'.format(np.mean(np.abs(crossings))))
     # f5.set_title('Locations of events at the respective field cycle')

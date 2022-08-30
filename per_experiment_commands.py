@@ -113,24 +113,25 @@ from analyze_detected_events import *
 #                    do_figures=False,
 #                    radius=False
 #                    )
-# analyze_detected_events('F:/yankai_levitation_transfer_highspeed_videos/'
-#                         '2020_sep_25/'
-#                         'FASTS4_1.25Vp10hz_Synced_000000/',
-#                         raw_frames_suffix = '',
-#                         gap_thresh = 9,
-#                         amp_thresh = 35,
-#                         amp_thresh_right=55,
-#                         amp_thresh_left=0,
-#                         do_space_filtering = False,
-#                         x_locs=[-76.0, 68.0],
-#                         x_loc_width=10,
-#                         y_locs = [112, 121],
-#                         y_loc_width = [15, 15],
-#                         n_event_thresh=0,
-#                         vp = 2.5/2,
-#                         fps=2300,
-#                         limc=2.5/2*1.1*100
-#                         )
+plt.rcParams['figure.dpi'] = 300
+analyze_detected_events('F:/yankai_levitation_transfer_highspeed_videos/'
+                        '2020_sep_25/'
+                        'FASTS4_1.25Vp10hz_Synced_000000/',
+                        raw_frames_suffix = '',
+                        gap_thresh = 9,
+                        amp_thresh = 35,
+                        amp_thresh_right=55,
+                        amp_thresh_left=0,
+                        do_space_filtering = False,
+                        x_locs=[-76.0, 68.0],
+                        x_loc_width=10,
+                        y_locs = [112, 121],
+                        y_loc_width = [15, 15],
+                        n_event_thresh=0,
+                        vp = 2.5/2,
+                        fps=2300,
+                        limc=2.5/2*1.1*100
+                        )
 
 # process_one_folder('F:/yankai_levitation_transfer_highspeed_videos/'
 #                    '2020_sep_25/'
@@ -140,6 +141,7 @@ from analyze_detected_events import *
 #                    start_frame=7411,
 #                    radius=False
 #                    )
+
 # analyze_detected_events('F:/yankai_levitation_transfer_highspeed_videos/'
 #                         '2020_sep_25/'
 #                         'FASTS4_2300fps_1.3Vpp10hz_Synced-4_000001/',
@@ -248,19 +250,19 @@ from analyze_detected_events import *
 #                    do_figures=False,
 #                    sum_0=31476558.0 / 8
 #                    )
-analyze_detected_events('E:/fastcam/2020_nov_10/FASTS4_11-10_1000rpm_000000/',
-                        raw_frames_suffix='',
-                        gap_thresh=9,
-                        amp_thresh=20,
-                        amp_thresh_right=55,
-                        amp_thresh_left=0,
-                        do_space_filtering=True,
-                        x_locs=[-58, 33],
-                        x_loc_width=3,
-                        y_locs = [12.7, 36],
-                        y_loc_width = [3, 3],
-                        vp=2.00 / 2,
-                        freq=150,
-                        limc=2.5 / 2 * 1.1 * 100,
-                        last_event=3000
-                        )
+# analyze_detected_events('E:/fastcam/2020_nov_10/FASTS4_11-10_1000rpm_000000/',
+#                         raw_frames_suffix='',
+#                         gap_thresh=9,
+#                         amp_thresh=20,
+#                         amp_thresh_right=55,
+#                         amp_thresh_left=0,
+#                         do_space_filtering=True,
+#                         x_locs=[-58, 33],
+#                         x_loc_width=3,
+#                         y_locs = [12.7, 36],
+#                         y_loc_width = [3, 3],
+#                         vp=2.00 / 2,
+#                         freq=150,
+#                         limc=2.5 / 2 * 1.1 * 100,
+#                         last_event=3000
+#                         )

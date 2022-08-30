@@ -31,13 +31,18 @@ files_list = ['comsol_results/gap-vs-voltage/0p5-meter-per-second/gap_vs_time_1.
 Us = np.array([0.5, 0.8, 1, 1.2, 1.5, 2])
 last_Vs = []
 colors = cmap(np.linspace(0,1,Us.shape[0]))
+fig, ax = plt.subplots(dpi=300, figsize=(3.75, 3.42))
 for i,target_file in enumerate(files_list):
     last_Vs.append(plot_file(target_file, Us[i], color=colors[i]))
-plt.legend()
-plt.ylabel('Air gap under the droplet at closest separation, μm')
+# plt.legend()
+plt.ylabel('Air gap under the droplet at\nclosest separation, μm')
 plt.xlabel('Voltage applied to the droplet, V')
 plt.xlim(0, 55/prefactor)
 plt.ylim(0, 20)
+ax.yaxis.tick_right()
+ax.yaxis.set_label_position("right")
+plt.tight_layout()
+fig.savefig('figures/comsol_electro_gaps.png', dpi=300)
 plt.show()
 
 data = np.loadtxt('misc_data/wired_voltage_thresh_vs_speed.txt', delimiter='\t', skiprows=1)

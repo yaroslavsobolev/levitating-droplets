@@ -164,14 +164,15 @@ if __name__ == '__main__':
     plt.show()
 
     # fit the dependence of kappa_b on the volume
+    f_kb_fit = plt.figure(figsize=(4.3, 3.5))
     ka = np.array([x[3] for x in shapes])
     Vs = np.array([x[4]/(x[2]*1000)**3 for x in shapes])
-    plt.plot(Vs, ka, 'o-')
-    plt.show()
+    # plt.plot(Vs, ka, 'o-')
+    # plt.show()
 
-    xdata = 1/Vs
+    xdata = 1/(Vs*3/4/np.pi)
     ydata = ka**2
-    plt.loglog(xdata, ydata, 'o-')
+    plt.loglog(xdata, ydata, 'o-', label='From drop shape found by FEM')
 
     def func(x, a, b, c):
         return a*x**b + c
@@ -181,14 +182,22 @@ if __name__ == '__main__':
     # bounds = [(0, 2 / 3 - 0.001, 0), (np.inf, 2 / 3 + 0.001, np.inf)]
     # bounds = [(0, 2 / 3 - 0.001, 0), (np.inf, 2 / 3 + 0.001, np.inf)]
     bounds = [(0, 0.5, 0), (np.inf, 3, np.inf)]
+    p0 = (4, 2 / 3, 4)
+    bounds = [p0, [x+0.001 for x in p0]]
     from_n = 0
     to_n = -1
-    popt, pcov = curve_fit(func, xdata[from_n:to_n], ydata[from_n:to_n], p0=(9.92, 2/3, 4), bounds=bounds,
+    popt, pcov = curve_fit(func, xdata[from_n:to_n], ydata[from_n:to_n], p0=p0, bounds=bounds,
                            sigma=ydata[from_n:to_n]**0.8, ftol=1e-30)
     print(popt)
     plt.plot(xdata, func(xdata, *popt), 'r-',
-             label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+             label='Analytical, $(k_b a)^2 = 4\hat{V}^{-2/3} + 4$')
+             # label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
     plt.grid()
+    plt.legend()
+    plt.xlabel('1/$\hat{V}$')
+    plt.ylabel('$(k_b a)^2$')
+    plt.tight_layout()
+    f_kb_fit.savefig('figures/kb_vs_V_fit.png', dpi=300)
     plt.show()
 
     # plot one of the shapes

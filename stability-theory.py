@@ -43,13 +43,13 @@ for sigma_factor in [1,2,5]:
         cas.append(r.x[0])
     cas = np.array(cas)
 
-    plt.plot(vreds, cas, '--', color='black')
+    plt.plot(vreds, cas, '--', label='{0}'.format(sigma_factor))
 
     #limit due to very small gap under the droplet
-    mingap = 2000e-9
+    mingap = 2000e-9 # in meters
     prefactor = ((mingap/2.123/0.3)/cap_length)**(3/2) * 1
     ca_lowlim = prefactor * ( ((3 * vreds) / (4 * np.pi))**(-2/3) + 2)**(3/4)
-    plt.plot(vreds, ca_lowlim, '--', color='C2')
+    plt.plot(vreds, ca_lowlim, '--', label='{0}'.format(sigma_factor))
 
     plt.fill_between(x=vreds, y1=ca_lowlim, y2=cas, color='C0', alpha=0.5)
 
@@ -58,7 +58,8 @@ plt.yscale('log')
 plt.xlim(vred_min/1.1, vred_max*1.1)
 plt.ylim(0.3e-4, 0.041)
 plt.ylabel('Capillary number $\mu v / \sigma$')
-plt.xlabel('Droplet volume, dimensionless $\\tilde{V}=V \cdot \left(\\frac{\sigma}{g \\rho}\\right)^{-3/2}$')
+plt.xlabel('Droplet volume, unitless $\\tilde{V}=V \cdot \left(\\frac{\sigma}{g \\rho}\\right)^{-3/2}$')
+plt.legend()
 plt.tight_layout()
 plt.show()
 
