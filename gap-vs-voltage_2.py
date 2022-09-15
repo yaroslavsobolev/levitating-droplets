@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from scipy.optimize import root
 cmap = matplotlib.cm.get_cmap('viridis')
 # prefactor = 4.1
 prefactor = 4.7
@@ -42,7 +43,7 @@ plt.ylim(0, 20)
 ax.yaxis.tick_right()
 ax.yaxis.set_label_position("right")
 plt.tight_layout()
-fig.savefig('figures/comsol_electro_gaps.png', dpi=300)
+# fig.savefig('figures/comsol_electro_gaps.png', dpi=300)
 plt.show()
 
 data = np.loadtxt('misc_data/wired_voltage_thresh_vs_speed.txt', delimiter='\t', skiprows=1)
@@ -65,8 +66,26 @@ plt.xlim(0,3)
 
 xdata = data[:,0]/1000
 ydata = data[:,1]
-def func(x, a):
-    return a*x**(2/3)
+
+####################### Analytical theory
+
+density_of_luquid = 1.05 #grams per cubic centimeter
+sigma = 25e-3 # N/m
+cap_length = 0.0015579 #m
+mu_air = 1.81e-5 # dynamic viscosity of air in Pa * s
+epsilon = 8.85e-12 # vacuum permittivity
+cap_num_coeff = 0.000724 # gives Capillary number when multiplied by speed in m/s
+droplet_volume = 25e-6 * (1e-1) ** 3 # 25 microliters. Volume in m**3
+volume_reduced = droplet_volume * 3 / (4 * np.pi * (cap_length ** 3)) # dimensionless volume (see paper)
+kappa_b = 2 / cap_length * np.sqrt(1 + volume_reduced ** (-2 / 3) ) # curvature in inverse meters (see paper)
+
+def cap_num(v):
+    return cap_num_coeff * v
+
+def func(U, h0, v):
+    return (0.102 + 0.538 * np.exp( -0.576 * epsilon * U**2 / (sigma * h0) * (6 * cap_num(v))**(-2/3) )) * \
+           (1 / kappa_b) * (6 * cap_num(v))**(2/3) - h0
+
 popt, pcov = curve_fit(func, xdata, ydata)
 print(popt)
 xs = np.linspace(0,3,100)
@@ -100,7 +119,7 @@ l1.get_frame().set_linewidth(3)
 # ax1.legend()
 # ax2.legend(loc='upper left')
 plt.tight_layout()
-fig.savefig('figures/voltage_vs_speed_noleg.png', dpi=800)
+# fig.savefig('figures/voltage_vs_speed_noleg_2.png', dpi=800)
 plt.show()
 
 sqr_factor = 1666.625 #volts

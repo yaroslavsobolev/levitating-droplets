@@ -149,7 +149,7 @@ B_prev = -0.33
 delta_B = 0.05
 Nprev = 10
 Hmins = []
-Ws = np.linspace(0, 3, 600)
+Ws = np.linspace(0, 3.9, 1000)
 Bs = []
 for i,W in enumerate(Ws):
     if i>10:
@@ -166,7 +166,7 @@ for i,W in enumerate(Ws):
                                do_plot=(i % 10 == 0))
     Hmins.append(Hmin)
     Bs.append(B_prev)
-    print('W={0}, B={1}, (B-expB)/B={2}'.format(W, B_prev, (B_prev-expected_B)/B_prev))
+    print('W={0}, B={1}, Hmin={2}, (B-expB)/B={2}'.format(W, B_prev, Hmin, (B_prev-expected_B)/B_prev))
 plt.legend()
 plt.xlim(-20, 3)
 plt.ylim(0, 3)

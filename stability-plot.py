@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import root
 
 exp_data = np.loadtxt('misc_data/experimental_stability/Droplet instability_clean.txt', delimiter='\t', skiprows=1)
 
@@ -46,7 +47,7 @@ ca_lim = (1/cd_factors)*2.0/9*(vreds)**(2/3)
 # plt.plot(vreds, ca_lim, '--', color='black')
 
 # more rigorous solving for Ca_max
-from scipy.optimize import root
+
 
 def func(Ca, Oh, vred):
     cd_f = cd_factor(vred, Ca/((Oh)**2))

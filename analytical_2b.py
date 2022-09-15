@@ -41,8 +41,8 @@ def numerical_downstream(x0 = -33.25, B=-0.321, xmax=20, W=0, do_plot=False):
     x = np.linspace(x0,xmax,200000)
 
     # numerical integration
-    additiona_precision = 1e-5
-    y=odeint(func, y0, x, rtol=1.49012e-8*additiona_precision, atol=1.49012e-8*additiona_precision)
+    additional_precision = 1e-5
+    y=odeint(func, y0, x, rtol=1.49012e-8*additional_precision, atol=1.49012e-8*additional_precision)
 
     if do_plot:
         data = np.loadtxt('analytical/literature/lhuisser2013_fig4b.txt', delimiter='\t', skiprows=1)[3:, :]

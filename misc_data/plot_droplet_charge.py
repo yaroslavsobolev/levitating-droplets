@@ -28,7 +28,7 @@ for i,col in enumerate(df.columns):
     plt.scatter(points, [i]*points.shape[0], alpha=0.65)
 
 # add vertical line at zero, add labels, save figure
-plt.axvline(x=0, color='red', linewidth=3, alpha=0.5)
+plt.axvline(x=0, color='red', linewidth=1, alpha=0.7)
 plt.xlabel('Droplet\'s net charge, nC')
 plt.tight_layout()
 fig.savefig('charge-on-droplet/droplet-net-cnarge.png', dpi=300)
