@@ -50,16 +50,18 @@ data = np.loadtxt('misc_data/wired_voltage_thresh_vs_speed.txt', delimiter='\t',
 
 fig,ax1 = plt.subplots(figsize=(4.5*0.9,4*0.9))
 tfem1 = plt.plot(Us, last_Vs, color='C0', linewidth=5, label='Theory (2D FEM)', alpha=0.6)
-e1 = plt.plot(data[:,0]/1000, data[:,1], 'o', label='Experiment', color='C0', alpha=1)
-z = np.polyfit(data[:,0]/1000, data[:,1], 1)
-p = np.poly1d(z)
-xp = np.linspace(0, 2, 100)
-plt.plot(xp, p(xp), '--', color='C0', alpha=0.5)
+e1 = plt.plot(data[:,0]/1000, data[:,1], 'o', label='Experiment', color='C0', alpha=0.7, markersize=5)
 
-z = np.polyfit(Us, last_Vs, 1)
-p = np.poly1d(z)
-xp = np.linspace(0, 2, 100)
-plt.plot(xp, p(xp), '--', color='C0', alpha=0.5)
+### Linear fits
+# z = np.polyfit(data[:,0]/1000, data[:,1], 1)
+# p = np.poly1d(z)
+# xp = np.linspace(0, 2, 100)
+# plt.plot(xp, p(xp), '--', color='C0', alpha=0.5)
+#
+# z = np.polyfit(Us, last_Vs, 1)
+# p = np.poly1d(z)
+# xp = np.linspace(0, 2, 100)
+# plt.plot(xp, p(xp), '--', color='C0', alpha=0.5)
 
 plt.ylim(0,18)
 plt.xlim(0,3)
@@ -69,7 +71,7 @@ ydata = data[:,1]
 
 ####################### Analytical theory
 
-density_of_luquid = 1.05 #grams per cubic centimeter
+density_of_liquid = 1.05 #grams per cubic centimeter
 sigma = 25e-3 # N/m
 cap_length = 0.0015579 #m
 mu_air = 1.81e-5 # dynamic viscosity of air in Pa * s
@@ -79,18 +81,58 @@ droplet_volume = 25e-6 * (1e-1) ** 3 # 25 microliters. Volume in m**3
 volume_reduced = droplet_volume * 3 / (4 * np.pi * (cap_length ** 3)) # dimensionless volume (see paper)
 kappa_b = 2 / cap_length * np.sqrt(1 + volume_reduced ** (-2 / 3) ) # curvature in inverse meters (see paper)
 
+def func(x, a):
+    return a*x**(2/3)
+popt, pcov = curve_fit(func, xdata, ydata)
+print(popt)
+xs = np.linspace(0, 3, 100)
+popt = [7]
+tana1 = plt.plot(xs, func(xs, *popt), color='C0', linestyle='--',
+         label='Theory (2D analytical)')
+
 def cap_num(v):
     return cap_num_coeff * v
 
-def func(U, h0, v):
-    return (0.102 + 0.538 * np.exp( -0.576 * epsilon * U**2 / (sigma * h0) * (6 * cap_num(v))**(-2/3) )) * \
-           (1 / kappa_b) * (6 * cap_num(v))**(2/3) - h0
+def Hmin(W):
+    return 0.304 * np.exp(-0.471 * W) + 0.421
 
-popt, pcov = curve_fit(func, xdata, ydata)
+def gap_for_gap(U, h0, v):
+    return (0.102 + 0.538 * np.exp( -0.576 * epsilon * U**2 / (sigma * h0) * (6 * cap_num(v))**(-2/3) )) * \
+           (1 / kappa_b) * (6 * cap_num(v))**(2/3)
+
+def plot_gaps_for_given_v(v, Umin, Umax, Nsteps):
+    Us = np.linspace(Umin, Umax, Nsteps)
+    def func(h0, U, v):
+        return gap_for_gap(U, h0, v) - h0
+    return Us, np.array([root(func, x0=2e-5, args=(U, v)).x[0] for U in Us])
+
+def mingap_for_given_U_and_v(U, v):
+    def func(h0, U, v):
+        return gap_for_gap(U, h0, v) - h0
+    h0_here = root(func, x0=3e-6, args=(U, v), tol=1e-14).x[0]
+    Ws = epsilon * U ** 2 / (sigma * h0_here) * (6 * cap_num(v)) ** (-2 / 3)
+    hmin = h0_here * Hmin(Ws)
+    return hmin
+
+def U_critical_vs_v(v, h_critical):
+    def func(U, h_critical, v):
+        return mingap_for_given_U_and_v(U, v) - h_critical
+    return root(func, x0=7.89213033 * v**(2/3), args=(h_critical, v), tol=1e-14).x[0]
+
+def func(v, h_critical, prefactor_here):
+    return np.array([U_critical_vs_v(x, h_critical) * prefactor_here for x in v])
+
+popt, pcov = curve_fit(func, xdata, ydata, p0=[1.35e-6, 1/5])
 print(popt)
-xs = np.linspace(0,3,100)
-tana1 = plt.plot(xs, func(xs, *popt), color='C0',
-         label='Theory (2D analytical)')
+
+vs = np.linspace(0.5, 2.86, 50)
+best_h_critical = popt[0] #1.35e-6
+best_prefactor = popt[1]
+Us_critical = np.array([U_critical_vs_v(v, best_h_critical) * best_prefactor for v in vs])
+plt.plot(vs, Us_critical)
+# plt.plot(vs, 28 * vs**(2/3))
+plt.show()
+
 
 plt.xlabel('Flight velocity V, m/s')
 
