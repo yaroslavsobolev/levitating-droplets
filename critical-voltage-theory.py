@@ -134,7 +134,7 @@ def plot_illustration_of_gap_min_vs_U():
         hmins = h0s * Hmin(Ws)
         plt.plot(Us, hmins * to_microns, color=colors[i])
 
-    plt.axhline(y=1.33, linestyle='--', color='black')
+    plt.axhline(y=1.41, linestyle='--', color='black')
     plt.ylim(0, 17)
     plt.xlabel('Potential $U$ applied to the droplet, V')
     plt.ylabel('Minimum gap $h_{min}$, $\mu$m')
@@ -144,7 +144,7 @@ def plot_illustration_of_gap_min_vs_U():
 
 # plot_illustration_of_stability()
 # plot_illustration_of_gap_vs_U()
-# plot_illustration_of_gap_min_vs_U()
+plot_illustration_of_gap_min_vs_U()
 
 # ### Version where h0 must be below some threshold h_critical
 #

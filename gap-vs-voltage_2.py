@@ -87,7 +87,7 @@ popt, pcov = curve_fit(func, xdata, ydata)
 print(popt)
 xs = np.linspace(0, 3, 100)
 popt = [7]
-tana1 = plt.plot(xs, func(xs, *popt), color='C0', linestyle='--',
+tana1 = plt.plot(xs, func(xs, *popt), color='C0', linestyle=':',
          label='Theory (2D analytical)')
 
 def cap_num(v):
@@ -131,7 +131,7 @@ best_prefactor = popt[1]
 Us_critical = np.array([U_critical_vs_v(v, best_h_critical) * best_prefactor for v in vs])
 plt.plot(vs, Us_critical)
 # plt.plot(vs, 28 * vs**(2/3))
-plt.show()
+# plt.show()
 
 
 plt.xlabel('Flight velocity V, m/s')
@@ -161,7 +161,7 @@ l1.get_frame().set_linewidth(3)
 # ax1.legend()
 # ax2.legend(loc='upper left')
 plt.tight_layout()
-# fig.savefig('figures/voltage_vs_speed_noleg_2.png', dpi=800)
+fig.savefig('figures/voltage_vs_speed_noleg_2.png', dpi=800)
 plt.show()
 
 sqr_factor = 1666.625 #volts
