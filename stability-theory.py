@@ -26,11 +26,11 @@ for sigma_factor in [1,2,5]:
         Re = CaOhm2*(3/4/np.pi*vreds)**(1/3)
         return 1 + 1/6*(Re)**(2/3)
     # cd_factors=1
-    # ca_lim = (1/cd_factors)*2.0/9*(3/4*vreds/np.pi)**(2/3)
-    # plt.plot(vreds, ca_lim)
+    # ca_lim = (1/cd_factors)*2.0/9*(3/4*reduced_volumes/np.pi)**(2/3)
+    # plt.plot(reduced_volumes, ca_lim)
     cd_factors=cd_factor(vreds, CaOhm2=1e-2/(Oh_number)**2)
     ca_lim = (1/cd_factors)*2.0/9*(3/4*vreds/np.pi)**(2/3)
-    # plt.plot(vreds, ca_lim, '--', color='black')
+    # plt.plot(reduced_volumes, ca_lim, '--', color='black')
 
     # more rigorous solving for Ca_max
     def func(Ca, Oh, vred):
