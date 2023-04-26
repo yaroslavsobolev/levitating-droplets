@@ -14,7 +14,7 @@ fig = plt.figure(1, dpi=300, figsize=(3.8, 2.6))
 plt.plot(wavelength, factor*(data[:,3]-baseline), color=colors[0])
 for i in range(4):
     plt.plot(wavelength, factor*(data[:,4 + i*3] - baseline), color=colors[i+1])
-plt.ylabel('Absorbance, a.u.')
+plt.ylabel('Fluorescence intensity, a.u.')
 plt.xlabel('Wavelength, nm')
 plt.tight_layout()
 fig.savefig('figures/reaction-progress.png', dpi=300)

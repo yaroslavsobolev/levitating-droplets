@@ -7,7 +7,13 @@ df = pd.read_excel('misc_data/experimental_stability/2021-12-08c.xlsx', sheet_na
 # for col in df.columns:
 #     print(col)
 
-fig, ax = plt.subplots(dpi=300, figsize=(3.5, 2.7))
+def simpleaxis(ax):
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+fig, ax = plt.subplots(dpi=300, figsize=(4.5, 3.1))
 plt.xscale('log')
 
 viscosity_factor = 1/1000
@@ -27,7 +33,7 @@ marker_dict = {'Other': 'o',
 
 for index, row in df.iterrows():
     # print(row)
-    if index > 63:
+    if index > 62:
         break
     print('{0} => {1} => {2}'.format(index, row['Type'], row['Details']))
     if row['Success'] == 1:
@@ -78,7 +84,8 @@ plt.ylabel('Surface tension $\sigma$, mN·m$^{-1}$')
 plt.xlim(0.0002, 15)
 plt.ylim(10, 77)
 plt.tight_layout()
+simpleaxis(ax)
 
-fig.savefig('figures/liquid_params.png')
+fig.savefig('figures/liquid_params.png', dpi=800)
 
 plt.show()

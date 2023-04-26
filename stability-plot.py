@@ -2,7 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import root
 
+def simpleaxis(ax):
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
 exp_data = np.loadtxt('misc_data/experimental_stability/Droplet instability_clean.txt', delimiter='\t', skiprows=1)
+exp_date_raw = np.loadtxt('misc_data/experimental_stability/droplet-instability-raw.csv', delimiter=',', skiprows=2)
+# Convert from angular velocity in rpm to linear velocity in mm/s
+exp_date_raw[:, 1] *= 1.68  * 3.14 * 35 / 60
+exp_date_raw[:, 2] *= 0.365 * 3.14 * 23 / 60
 
 # Experimental data is done for water-surfactant mixtyre. Density ~1050 kg/m^3, surface tension 25 mN/m, and high viscosity.
 density_of_luquid = 1.05 #grams per cubic centimeter
@@ -15,26 +25,31 @@ density_of_air = 1.225 # kg/m^3
 Oh_master = np.sqrt(mu_air**2/(density_of_air * cap_length * sigma)) # ohnesorge number
 
 exp_data_dimensionless = np.copy(exp_data)
-exp_data_dimensionless[:,0] *= 1e-9/(4/3*np.pi*cap_length**3) # 1e-9 factor is for converting from uL to m^3
-exp_data_dimensionless[:,1:] *= 1e-3*cap_num_coeff # 1e-3 factor is for converting from mm/s to m/s
+exp_data_dimensionless[:,0] *= 1e-9/(4/3 * np.pi * cap_length ** 3) # 1e-9 factor is for converting from uL to m^3
+exp_data_dimensionless[:,1:] *= 1e-3 * cap_num_coeff # 1e-3 factor is for converting from mm/s to m/s
+
+exp_data_raw_dimensionless = np.copy(exp_date_raw)
+exp_data_raw_dimensionless[:,0] *= 1e-9/(4/3 * np.pi * cap_length ** 3) # 1e-9 factor is for converting from uL to m^3
+exp_data_raw_dimensionless[:,1:] *= 1e-3 * cap_num_coeff # 1e-3 factor is for converting from mm/s to m/s
 
 vred_max = np.max(exp_data_dimensionless[:,0])
 vred_min = np.min(exp_data_dimensionless[:,0])
 
 unstable_color = 'goldenrod'
-
-fig, ax = plt.subplots(figsize=(3.5, 3.3), dpi=300)
-plt.errorbar(x=exp_data_dimensionless[:,0], y=exp_data_dimensionless[:,1], yerr=exp_data_dimensionless[:,2],
-             capsize=5, linestyle='', marker='o', color='grey')
-plt.errorbar(x=exp_data_dimensionless[:,0], y=exp_data_dimensionless[:,3], yerr=exp_data_dimensionless[:,4],
-             capsize=5, linestyle='', marker='o', color='grey')
+fig, ax = plt.subplots(figsize=(3.7, 3.3), dpi=300)
+# plt.errorbar(x=exp_data_dimensionless[:,0], y=exp_data_dimensionless[:,1], yerr=exp_data_dimensionless[:,2],
+#              capsize=5, linestyle='', marker='o', color='grey')
+# plt.errorbar(x=exp_data_dimensionless[:,0], y=exp_data_dimensionless[:,3], yerr=exp_data_dimensionless[:,4],
+#              capsize=5, linestyle='', marker='o', color='grey')
 plt.fill_between(x=exp_data_dimensionless[:,0], y1=np.zeros_like(exp_data_dimensionless[:,0]),
                  y2=exp_data_dimensionless[:,3], color=unstable_color, alpha=0.3)
 plt.fill_between(x=exp_data_dimensionless[:,0], y1=exp_data_dimensionless[:,3], y2=exp_data_dimensionless[:,1],
                  color='C0', alpha=0.4)
 plt.fill_between(x=exp_data_dimensionless[:,0], y1=exp_data_dimensionless[:,1],
                  y2=0.08*np.ones_like(exp_data_dimensionless[:,0]), color=unstable_color, alpha=0.3)
-plt.annotate('Stable levitation', color='C0', xy=(2.7, 0.00065), fontsize=20, alpha=0.6, ha='center')
+plt.scatter(exp_data_raw_dimensionless[:,0], exp_data_raw_dimensionless[:,1], color='black', marker='x', s=20, alpha=0.75, linewidth=0.8)
+plt.scatter(exp_data_raw_dimensionless[:,0], exp_data_raw_dimensionless[:,2], color='C2', marker='x', s=20, alpha=0.75, linewidth=0.8)
+plt.annotate('Stable levitation', color='C0', xy=(2.7, 0.00065), fontsize=16, alpha=0.6, ha='center')
 
 # Limit due to wall climbing by drag
 vreds = np.logspace(np.log10(vred_min), np.log10(vred_max), 100)
@@ -98,8 +113,46 @@ plt.xlim(vred_min/1.1, vred_max*1.1)
 plt.ylim(5e-5, 0.019)
 plt.ylabel('Capillary number $\mu v / \sigma$')
 # plt.xlabel('Droplet volume, dimensionless $\\tilde{V}=3V/(4 \pi) \cdot \left(\\frac{\sigma}{g \\rho}\\right)^{-3/2}$')
-plt.xlabel('Droplet volume, unitless $\\tilde{V}=3V/(4 \pi a^3)$')
+plt.xlabel('Droplet volume, unitless $\\hat{V}=3V (4 \pi a^3)^{-1}$')
+ax_volume = ax.twiny()
+ax_volume.set_xlim(np.min(exp_data[:, 0]), np.max(exp_data[:, 0]))
+ax_volume.set_xscale('log')
+ax_volume.set_xlabel('Droplet volume $V$, μL')
+
+### linear speed
+ax_linspeed = ax.twinx()
+ax_linspeed.set_ylim(5e-5 / (1e-3 * cap_num_coeff) / 1000,
+                     0.019 / (1e-3 * cap_num_coeff) / 1000)
+ax_linspeed.set_yscale('log')
+ax_linspeed.set_ylabel('Linear speed $v$, m/s')
+
+
+# ### Angular velocity
+# ax_linspeed = ax.twinx()
+# ax_linspeed.set_ylim(5e-5 / (1e-3 * cap_num_coeff) / (2 * np.pi * (35)/2) * 60 /1000,
+#                      0.019 / (1e-3 * cap_num_coeff) / (2 * np.pi * (35)/2) * 60 /1000)
+# ax_linspeed.set_yscale('log')
+# ax_linspeed.set_ylabel('Angular velocity, 1000 r.p.m.')
+# # ax_linspeed.set_yticks([2, 3, 4, 5])
+# # ax_linspeed.set_yticklabels([2, 3, 4, 5])
+
+# par2 = host.twinx()
+#
+# offset = 60
+# new_fixed_axis = par2.get_grid_helper().new_fixed_axis
+# par2.axis["right"] = new_fixed_axis(loc="right", axes=par2,
+#                                         offset=(offset, 0))
+# par2.axis["right"].toggle(all=True)
+# par2.set_ylabel("Angular velocity, r.p.m.")
+# par2.set_ylim(np.min(exp_data[:, 1]) / (2 * np.pi * (35)/2) * 60,
+#               np.max(exp_data[:, 1]) / (2 * np.pi * (35)/2) * 60)
+
+# ax_linspeed.yaxis.set_major_formatter(ticker.FormatStrFormatter('%d'))
+# ax_linspeed.set_yticklabels(['4', '6'])
+
+
 plt.tight_layout()
-fig.savefig('figures/stability-phase-diagram-1.png', dpi=300)
+# simpleaxis(ax)
+fig.savefig('figures/stability-phase-diagram-1.png', dpi=600)
 plt.show()
 

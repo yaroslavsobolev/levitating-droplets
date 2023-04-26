@@ -7,6 +7,12 @@ cmap = matplotlib.cm.get_cmap('viridis')
 # prefactor = 4.1
 prefactor = 4.7
 
+def simpleaxis(ax):
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_tick_params(direction='out')
+    ax.yaxis.set_tick_params(direction='out')
+
 def time_to_voltage(t):
     return (t-1.15)/(5-1.15)*100/prefactor
 
@@ -18,6 +24,7 @@ def plot_file(target_file, u, color):
     rgba = cmap(0.5)
     plt.plot(time_to_voltage(data[:, 0]), data[:, 1] * 1e3, label='U={0:.1f} m/s'.format(u),
              color=color)
+
     plt.plot([time_to_voltage(data[-1, 0]), time_to_voltage(data[-1, 0])], [data[-1, 1]*1e3, 0], color='black', linestyle='--')
     # plt.plot(time_to_voltage(data[:,0])/u**(2/3), data[:,1]*1e3/u**(2/3))
     # plt.plot(time_to_voltage(data[:, 0]) / u**(2/3), data[:, 1] * 1e3 / data[0, 1])
@@ -32,18 +39,22 @@ files_list = ['comsol_results/gap-vs-voltage/0p5-meter-per-second/gap_vs_time_1.
 Us = np.array([0.5, 0.8, 1, 1.2, 1.5, 2])
 last_Vs = []
 colors = cmap(np.linspace(0,1,Us.shape[0]))
-fig, ax = plt.subplots(dpi=300, figsize=(3.75, 3.42))
+fig, ax = plt.subplots(dpi=300, figsize=(3.5, 3.42))
 for i,target_file in enumerate(files_list):
     last_Vs.append(plot_file(target_file, Us[i], color=colors[i]))
+
 # plt.legend()
 plt.ylabel('Air gap under the droplet at\nclosest separation, μm')
-plt.xlabel('Voltage applied to the droplet, V')
+plt.xlabel('Potential $U$ of the droplet, V')
 plt.xlim(0, 55/prefactor)
 plt.ylim(0, 20)
-ax.yaxis.tick_right()
-ax.yaxis.set_label_position("right")
+# Set tick spacing to 5
+ax.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
+# ax.yaxis.tick_right()
+# ax.yaxis.set_label_position("right")
 plt.tight_layout()
-# fig.savefig('figures/comsol_electro_gaps.png', dpi=300)
+simpleaxis(ax)
+fig.savefig('figures/comsol_electro_gaps.png', dpi=300)
 plt.show()
 
 data = np.loadtxt('misc_data/wired_voltage_thresh_vs_speed.txt', delimiter='\t', skiprows=1)
@@ -134,24 +145,24 @@ plt.plot(vs, Us_critical)
 # plt.show()
 
 
-plt.xlabel('Flight velocity V, m/s')
+plt.xlabel('Flight velocity $v$, m/s')
 
 color = 'C0'
-ax1.set_ylabel('Wired critical voltage, U', color=color)
+ax1.set_ylabel('Wired critical voltage, $U_{crit}$', color=color)
 ax1.tick_params(axis='y', labelcolor=color)
 
 ax2 = ax1.twinx()
 
 color = 'C1'
-ax2.set_ylabel('Wireless critical voltage, U', color=color)
+ax2.set_ylabel('Wireless critical voltage change, $\Delta \hat{U}$', color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 
 wireless_data = np.loadtxt('misc_data/wireless_voltage_thresh_vs_velocity.txt', skiprows=0, delimiter=' ')
-e2 = ax2.errorbar(x=wireless_data[:,0], y=wireless_data[:,1], yerr=wireless_data[:,2],
+e2 = ax2.errorbar(x=wireless_data[:,0], y=wireless_data[:,1]/2, yerr=wireless_data[:,2]/2,
              capsize=4, fmt='o', color=color,
              alpha=0.6, label='Experiment')
-plt.ylim(0, 86)
-ax2.axhline(y=np.mean(wireless_data[:,1]), color=color, label='Theory (2D analytical)', alpha=0.7)
+plt.ylim(0, 86/2)
+ax2.axhline(y=np.mean(wireless_data[:,1]/2), color=color, label='Theory (2D analytical)', alpha=0.7)
 
 handles, labels = ax1.get_legend_handles_labels()
 order = [1,2,0]
