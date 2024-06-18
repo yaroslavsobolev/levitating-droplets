@@ -2,10 +2,9 @@
 
 This repository contains the data and code used in the following research article:
 
-[![DOI](https://doi.org/10.1002/anie.202318038)](https://doi.org/10.1002/anie.202318038)
 Yankai Jia, Yaroslav I. Sobolev, Olgierd Cybulski, Tomasz Klucznik, Cristóbal Quintana, Juan Carlos Ahumada, & Bartosz A. Grzybowski,
 "Aerodynamically levitated droplets as small-scale chemical reactors and liquid microprinters",
-*Angewandte Chemie International Edition*, **2024**, e202318038
+*Angewandte Chemie International Edition*, **2024**, e202318038 [![DOI:10.1002/anie.202318038](http://img.shields.io/badge/DOI-10.1002/anie.202318038-4169e1.svg)](https://doi.org/10.1002/anie.202318038)
 
 ## Requirements
 
