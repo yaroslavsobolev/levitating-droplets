@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.optimize import root
 cmap = matplotlib.cm.get_cmap('viridis')
-# prefactor = 4.1
+
 prefactor = 4.7
 
 def simpleaxis(ax):
@@ -158,11 +158,11 @@ ax2.set_ylabel('Wireless critical voltage change, $\Delta \hat{U}$', color=color
 ax2.tick_params(axis='y', labelcolor=color)
 
 wireless_data = np.loadtxt('misc_data/wireless_voltage_thresh_vs_velocity.txt', skiprows=0, delimiter=' ')
-e2 = ax2.errorbar(x=wireless_data[:,0], y=wireless_data[:,1]/2, yerr=wireless_data[:,2]/2,
+e2 = ax2.errorbar(x=wireless_data[:,0], y=wireless_data[:,1]*2, yerr=wireless_data[:,2]*2,
              capsize=4, fmt='o', color=color,
              alpha=0.6, label='Experiment')
-plt.ylim(0, 86/2)
-ax2.axhline(y=np.mean(wireless_data[:,1]/2), color=color, label='Theory (2D analytical)', alpha=0.7)
+plt.ylim(0, 86*2)
+ax2.axhline(y=np.mean(wireless_data[:,1] * 2), color=color, label='Theory (2D analytical)', alpha=0.7)
 
 handles, labels = ax1.get_legend_handles_labels()
 order = [1,2,0]

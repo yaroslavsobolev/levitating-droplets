@@ -7,7 +7,7 @@ target_folder = 'E:/yankai_levitation_transfer_highspeed_videos/'\
                 'FASTS4_1.25Vp10hz_Synced_000000/'
 misc_folder = target_folder + 'misc/'
 freq = 10
-limc=2.5/2*1.1*100
+limc = 2.5/2*1.1*100
 
 # start with a rectangular Figure
 f5, ax_scatter = plt.subplots(figsize=(3.5, 4))
